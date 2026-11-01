@@ -1,4 +1,7 @@
 from datetime import datetime, timedelta
+import winsound
+import threading
+
 class Finance:
     next_id=1
     def __init__(self,amount,type,category):
@@ -87,9 +90,57 @@ class Reminder:
         self.amount=amount
         self.due_date=due_date
         self.reminder_date=due_date-timedelta(days=7)
+    def check_reminder(self):
+        today=datetime.now().date()
+        time_elapsed=self.due_date.date()-today
+        if time_elapsed.days < 0:
+            print(
+            f"WOW OMG WE ARE DOOMED. HOW COULD YOU NOT MAKE A PAYMENT DUDE? THE PAYMENT WAS DUE ON LET'S SEE {abs(time_elapsed.days)} DAYS AGO.")
+        elif time_elapsed.days == 0:
+
+
+            print("YOUR PAYMENT IS DUE TODAY. MAKE THE PAYMENT RIGHT NOW! OR I WILL LOOP FOREVER.")
+            self.play_alarm()
+
+        elif today>=self.reminder_date.date():
+
+            print(f"Alert!Your payment needs to be made in {time_elapsed.days} days.")
+
+
+    def ring_alarm(self, stop_alarm):
+        while not stop_alarm.is_set():
+            winsound.Beep(1000, 500)
+
+    def play_alarm(self):
+        stop_alarm=threading.Event()
+        worker=threading.Thread(target=self.ring_alarm, args=(stop_alarm,))
+        worker.start()
+        input("Press ENTER to stop the alarm...")
+        stop_alarm.set()
+        worker.join()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 manager = Manager()
+
+
 transactions = len(manager.transactions)
 manager.add_transaction(salary)
 manager.add_transaction(food)
@@ -97,12 +148,21 @@ salary = Finance(50000, "income", "salary")
 food = Finance(1000, "expense", "food")
 transport = Finance(500, "expense", "transport")
 netflix=Reminder("Netflix",300,datetime(2026,11,1))
+subscription=Reminder("Subscription",300,datetime(2026,10,19))
+rent=Reminder("Rent",300,datetime(2026,11,7))
+
 print(manager.calculate_income())
 print(manager.calculate_expense())
 print(manager.calculate_total())
 print(manager)
 print(manager.history())
 print(netflix.reminder_date)
+netflix.check_reminder()
 
+subscription.check_reminder()
+rent.check_reminder()
+rent.play_alarm()
+subscription.play_alarm()
+netflix.play_alarm()
 
 
